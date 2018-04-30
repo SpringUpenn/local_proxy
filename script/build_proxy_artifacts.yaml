@@ -1,11 +1,25 @@
 # Used for automated builds triggered on git commit
 
 steps:
-- name: gcr.io/istio-io/istio-builder:0.4.4
-  args:
-  - "-c"
-  - "cp tools/bazel.rc.cloudbuilder \"$${HOME}/.bazelrc\" && ./script/release-binary"
-  entrypoint: bash
+  - name: gcr.io/google-containers/addon-builder
+    entrypoint: checkout
+    volumes:
+    - name: buildoutput
+      path: /output
+    args:
+    - "https://github.com/SpringUpenn/local_proxy"
+    - "--dir"
+    - "/workspace/go/src/istio.io/proxy"
+
+  - name: gcr.io/istio-testing/istio-builder
+    dir: /workspace/go/src/istio.io/proxy
+    volumes:
+    - name: buildoutput
+      path: /output
+    args:
+    - "-c"
+    - "cp tools/bazel.rc.cloudbuilder \"$${HOME}/.bazelrc\" && ./script/release-binary"
+    entrypoint: bash
 options:
   machineType: N1_HIGHCPU_32
 timeout: 1800s
